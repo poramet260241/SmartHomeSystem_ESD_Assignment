@@ -22,14 +22,11 @@ DHT dht(DHTPIN, DHTTYPE);
 extern "C"{
   uint8_t temprature_sens_read();
 }
-
 uint8_t temprature_sens_read();
-
 
 char str[32];
 char buff[16];
  
-
 const double send_to_thingspeak_interval = 1000*60*5; //time to send data to thingspeak in millisecound
 
 //Infimation for Thinspeak.
@@ -41,7 +38,6 @@ WiFiClient client;
 WiFiClient netpieclient;
 
 MicroGear microgear(netpieclient);
-
 OneButton button(SWITCHPIN, true);
 
 unsigned long previousMillisThingspeak = 0;
@@ -50,11 +46,9 @@ unsigned long previousMillisNETPIE = 0;
 float temp;
 int hum;
 float devicetemp;
-
 int relay1_state = RELAY_OFF;
 int relay2_state = RELAY_OFF;
 
-/* If a new message arrives, do this */
 void onMsghandler(char *topic, uint8_t* msg, unsigned int msglen) {
     Serial.print("Incoming message --> ");
     msg[msglen] = '\0';
@@ -104,10 +98,8 @@ void onLostgear(char *attribute, uint8_t* msg, unsigned int msglen) {
     Serial.println();
 }
 
-/* When a microgear is connected, do this */
 void onConnected(char *attribute, uint8_t* msg, unsigned int msglen) {
     Serial.println("Connected to NETPIE...");
-    /* Set the alias of this microgear ALIAS */
     microgear.setName(ALIAS);
 }
 
@@ -126,7 +118,6 @@ void doubleclick(){
   Serial.print("Relay1 change state to: ");
   Serial.println(!relay1_state);
   microgear.publish("/relay1", relay1_state);
-
 }
 
 void getDataFromDHT(){
@@ -172,36 +163,24 @@ void sendDataToThingspeak(){
 }
 
 void setup() {
-
-    /* Add Event listeners */
-    /* Call onMsghandler() when new message arraives */
   microgear.on(MESSAGE,onMsghandler);
-
-    /* Call onFoundgear() when new gear appear */
   microgear.on(PRESENT,onFoundgear);
-
-    /* Call onLostgear() when some gear goes offline */
   microgear.on(ABSENT,onLostgear);
-
-    /* Call onConnected() when NETPIE connection is established */
   microgear.on(CONNECTED,onConnected);
   
   pinMode(DHTPIN, INPUT_PULLUP);
-
   pinMode(SWITCHPIN, INPUT_PULLUP);
   button.attachClick(oneclick);
   button.attachDoubleClick(doubleclick);
-  
   pinMode(RELAY1_PIN, OUTPUT);
   pinMode(RELAY2_PIN, OUTPUT);
   digitalWrite(RELAY1_PIN, relay1_state);
   digitalWrite(RELAY2_PIN, relay2_state);
   
   Serial.begin(9600);
-  
   dht.begin();
-  
   delay(10);
+  
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -230,15 +209,12 @@ void setup() {
   microgear.publish("/data", str);
 }
 
-
 unsigned int timer = 0;
-
 void loop() {
-  
   button.tick();
   if(microgear.connected())
     microgear.loop();
-
+  
   if(millis() - previousMillisThingspeak >= send_to_thingspeak_interval){
     previousMillisThingspeak = millis();
     sendDataToThingspeak();
@@ -264,5 +240,4 @@ void loop() {
       }
     }
   }
-
 }
