@@ -19,11 +19,18 @@ DHT dht(DHTPIN, DHTTYPE);
 #define SECRET  "PGIu5gWzoXr9KJavVjBooZCde"
 #define ALIAS   "ESP32"
 
+extern "C"{
+  uint8_t temprature_sens_read();
+}
+
+uint8_t temprature_sens_read();
+
+
 char str[32];
 char buff[16];
  
 
-const double send_to_thingspeak_interval = 1000*60*15; //time to send data to thingspeak in millisecound
+const double send_to_thingspeak_interval = 1000*60*5; //time to send data to thingspeak in millisecound
 
 //Infimation for Thinspeak.
 String apiKey = "XA6QINFLOXG4QIM8";
@@ -42,6 +49,7 @@ unsigned long previousMillisNETPIE = 0;
 
 float temp;
 int hum;
+float devicetemp;
 
 int relay1_state = RELAY_OFF;
 int relay2_state = RELAY_OFF;
@@ -137,6 +145,8 @@ void sendDataToThingspeak(){
     return;
   }
 
+  devicetemp = (temprature_sens_read()-32)/1.8;
+
   String url = "/update?api_key=";
   url += apiKey;
   url += "&field1=";
@@ -144,9 +154,7 @@ void sendDataToThingspeak(){
   url += "&field2=";  
   url += hum;
   url += "&field3=";  
-  url += (!relay1_state);
-  url += "&field4=";  
-  url += (!relay2_state);
+  url += (devicetemp);
 
   Serial.print("Requesting URL: ");
   Serial.println(url);
@@ -237,24 +245,24 @@ void loop() {
   }
 
   if(millis() - previousMillisNETPIE >= 1000){
-  	previousMillisNETPIE = millis();
-  	if(microgear.connected()){
-  		if(millis() - timer >= 1000*60*5){
+    previousMillisNETPIE = millis();
+    if(microgear.connected()){
+      if(millis() - timer >= 1000*60*5){
         getDataFromDHT();
-  			sprintf(str, "%.2f,%d",temp, hum);
-  			Serial.println(str);
-  			Serial.println("Sending -->");
-  			microgear.publish("/data", str);
-  			timer = millis();
-  		}
-  	}
-  	else {
-  		Serial.println("Connection lost, reconnect...");
-  		if(millis() - timer >= 1000*5) {
-  			microgear.connect(APPID);
-  			timer = millis();
-  		}
-  	}
+        sprintf(str, "%.2f,%d",temp, hum);
+        Serial.println(str);
+        Serial.println("Sending -->");
+        microgear.publish("/data", str);
+        timer = millis();
+      }
+    }
+    else {
+      Serial.println("Connection lost, reconnect...");
+      if(millis() - timer >= 1000*5) {
+        microgear.connect(APPID);
+        timer = millis();
+      }
+    }
   }
 
 }
