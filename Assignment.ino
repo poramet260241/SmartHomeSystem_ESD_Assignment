@@ -26,8 +26,9 @@ uint8_t temprature_sens_read();
 
 char str[32];
 char buff[16];
- 
-const double send_to_thingspeak_interval = 1000*60*5; //time to send data to thingspeak in millisecound
+
+//time to send data to thingspeak in millisecound
+const double send_to_thingspeak_interval = 1000*60*5; 
 
 //Infimation for Thinspeak.
 String apiKey = "XA6QINFLOXG4QIM8";
